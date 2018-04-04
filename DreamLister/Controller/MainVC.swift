@@ -22,7 +22,7 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
         tableView.delegate = self
         tableView.dataSource = self
         
-        generateTestData()
+        //generateTestData()
         attemptFetch()
     }
 
@@ -42,6 +42,26 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
         
         let item = controller.object(at: indexPath as IndexPath)
         cell.configureCell(item: item)
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        if let objs = controller.fetchedObjects, objs.count > 0 {
+            
+            let item = objs[indexPath.row]
+            performSegue(withIdentifier: "ItemDetailsVC", sender: item)
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        
+        if segue.identifier == "ItemDetailsVC" {
+            if let destination = segue.destination as? ItemDetailsVC {
+                if let item = sender as? Item {
+                     destination.itemToEdit = item
+                }
+            }
+        }
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -70,9 +90,23 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
         
         let fetchRequest: NSFetchRequest<Item> = Item.fetchRequest()
         let dateSort = NSSortDescriptor(key: "created", ascending: false)
-        fetchRequest.sortDescriptors = [dateSort]
+        let priceSort = NSSortDescriptor(key: "price", ascending: true)
+        let titleSort = NSSortDescriptor(key: "title", ascending: true)
+        
+        if segment.selectedSegmentIndex == 0 {
+            
+            fetchRequest.sortDescriptors = [dateSort]
+        } else if segment.selectedSegmentIndex == 1 {
+            
+            fetchRequest.sortDescriptors = [priceSort]
+        } else if segment.selectedSegmentIndex == 2 {
+            
+            fetchRequest.sortDescriptors = [titleSort]
+        }
         
         let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        
+        controller.delegate = self 
         
         self.controller = controller
         
@@ -86,6 +120,13 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
         }
         
     }
+    
+    @IBAction func segmentChange(_ sender: Any) {
+        
+        attemptFetch()
+        tableView.reloadData()
+    }
+    
     
     func controllerWillChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
         
@@ -131,22 +172,22 @@ class MainVC: UIViewController, UITableViewDelegate, UITableViewDataSource, NSFe
     
     func generateTestData() {
         
-        let item = Item(context: context)
-        item.title = "GT Shelby 350"
-        item.price = 80000
-        item.details = "I can't wait to have one of my dream cars!"
-        
-        let item2 = Item(context: context)
-        item2.title = "Bose Headphones"
-        item2.price = 300
-        item2.details = "The noise canceling is amazing on these headphones."
-        
-        let item3 = Item(context: context)
-        item3.title = "Mercedes AMG G-Wagon"
-        item3.price = 100000
-        item3.details = "This could sure replace my JEEP (the one I don't have)."
-        
-        ad.saveContext() 
+//        let item = Item(context: context)
+//        item.title = "GT Shelby 350"
+//        item.price = 80000
+//        item.details = "I can't wait to have one of my dream cars!"
+//
+//        let item2 = Item(context: context)
+//        item2.title = "Bose Headphones"
+//        item2.price = 300
+//        item2.details = "The noise canceling is amazing on these headphones."
+//
+//        let item3 = Item(context: context)
+//        item3.title = "Mercedes AMG G-Wagon"
+//        item3.price = 100000
+//        item3.details = "This could sure replace my JEEP (the one I don't have)."
+//
+//        ad.saveContext() 
     }
 
 }
